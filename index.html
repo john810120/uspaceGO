@@ -205,6 +205,8 @@ border-radius:6px;
 
 <script>
 
+const API_URL="https://script.google.com/a/macros/uspace.city/s/AKfycbyk8ehoWckilpridvb820zkFEteIoOfh4Ridz2DBp5IkWMzEwliL_iT2B_rsQgDK6i_uQ/exec";
+
 let sites = JSON.parse(localStorage.getItem("sites") || '["光復大廈"]');
 let records = JSON.parse(localStorage.getItem("records") || "[]");
 
@@ -288,17 +290,31 @@ let spot=expandSpots(document.getElementById("spot").value);
 let result=document.getElementById("result").value;
 let note=document.getElementById("note").value;
 
-records.push({
-site,
-spot,
-result,
-note,
-date:currentDate
-});
+let data={
+date:currentDate,
+site:site,
+spot:spot,
+result:result,
+note:note
+};
 
+/* 本機儲存 */
+records.push(data);
 save();
-
 render();
+
+/* 雲端同步 */
+fetch(API_URL,{
+method:"POST",
+body:JSON.stringify(data)
+})
+.then(res=>res.text())
+.then(msg=>{
+console.log("同步成功",msg);
+})
+.catch(err=>{
+console.log("同步失敗",err);
+});
 
 }
 
@@ -348,13 +364,9 @@ html+=`
 <tr>
 
 <td>${r.site}</td>
-
 <td>${r.spot}</td>
-
 <td class="${r.result=='換電'?'result-success':'result-fail'}">${r.result}</td>
-
 <td>${r.date}</td>
-
 <td>${r.note||""}</td>
 
 <td>
